@@ -132,3 +132,4 @@ export default async function TimelinePage({ searchParams }: TimelinePageProps) 
     </div>
   );
 }
+

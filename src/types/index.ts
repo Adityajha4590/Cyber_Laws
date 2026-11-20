@@ -252,3 +252,4 @@ export interface ResearchAssistantResponse {
   verificationStatus: VerificationStatus;
   disclaimer: string;
 }
+

@@ -117,3 +117,4 @@ export class SearchService {
     return results.sort((a, b) => b.relevanceScore - a.relevanceScore);
   }
 }
+

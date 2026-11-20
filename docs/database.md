@@ -42,3 +42,4 @@ The database is modeled in PostgreSQL using Prisma ORM. It enforces strict refer
 - **`ResearchReviewQueue`**: Admin review pipeline for approving AI findings into authoritative records.
 - **`User` / `UserRole`**: Admin authentication and session management.
 - **`AuditLog`**: Tamper-evident log of administrative mutations.
+

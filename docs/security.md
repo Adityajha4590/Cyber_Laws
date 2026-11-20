@@ -34,3 +34,4 @@ CyberLaw Atlas is designed around defense-in-depth principles appropriate for le
 ### 2.6 Administrative Role-Based Access Control (RBAC)
 - Staging and review of unverified research is isolated in `/admin`.
 - Administrative mutations (approvals, rejections, additions) are immutably recorded in the `AuditLog` table.
+

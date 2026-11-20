@@ -43,3 +43,4 @@ export function formatFine(min: number | null | undefined, max: number | null | 
   if (max != null) return `Up to ${fmt(max)}`;
   return `Minimum ${fmt(min!)}`;
 }
+

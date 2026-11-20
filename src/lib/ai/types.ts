@@ -34,3 +34,4 @@ export interface SearchProvider {
   isConfigured(): boolean;
   search(query: string, maxResults?: number): Promise<SearchQueryResult[]>;
 }
+

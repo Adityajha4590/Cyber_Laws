@@ -1133,3 +1133,4 @@ export const SEED_TIMELINE_EVENTS: LegislationEventData[] = [
     sourceUrl: "https://www.supremecourt.gov",
   },
 ];
+

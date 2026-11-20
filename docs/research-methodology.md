@@ -37,3 +37,4 @@ A legal gap is declared **only** when:
 - Authoritative statutory definitions of criminal modalities fail to encompass the specific technological vector (e.g. generative neural audio synthesis without deceptive human impersonation).
 - Judicial precedent confirms existing statutes do not extend to the conduct (e.g. *Van Buren v. United States* restricting CFAA scope).
 - Missing search results are **never** treated as proof that an offence does not exist.
+

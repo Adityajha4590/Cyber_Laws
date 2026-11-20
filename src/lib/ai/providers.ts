@@ -124,3 +124,4 @@ export function getAIProvider(): AIServiceProvider {
   // Default fallback: Reliable, zero-crash statutory reasoning provider
   return new MockLegalAIProvider();
 }
+

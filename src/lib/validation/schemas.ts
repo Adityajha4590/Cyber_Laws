@@ -71,3 +71,4 @@ export const ResearchQuerySchema = z.object({
   countryCode: z.string().length(2).optional(),
   crimeSlug: z.string().optional(),
 });
+

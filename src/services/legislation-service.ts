@@ -50,3 +50,4 @@ export class LegislationService {
       .slice(0, 5);
   }
 }
+

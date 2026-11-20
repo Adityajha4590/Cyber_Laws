@@ -32,3 +32,4 @@ describe("AI Legal Research Assistant Pipeline", () => {
     expect(res.citations.length).toBeGreaterThan(0);
   });
 });
+

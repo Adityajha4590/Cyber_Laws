@@ -95,3 +95,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📜 Disclaimer
 CyberLaw Atlas is an educational and legal-tech research instrument. Information provided herein is compiled from authoritative government gazettes and statutory repositories for informational purposes and does not constitute formal legal counsel.
+

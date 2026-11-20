@@ -36,3 +36,4 @@ describe("ComparisonService", () => {
     expect(res?.methodologyNotes.length).toBeGreaterThan(0);
   });
 });
+

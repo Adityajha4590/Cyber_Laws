@@ -269,3 +269,4 @@ export default async function CrimeDetailPage({ params }: CrimeDetailPageProps) 
     </div>
   );
 }
+

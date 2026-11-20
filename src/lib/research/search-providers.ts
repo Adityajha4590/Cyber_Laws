@@ -93,3 +93,4 @@ export function getSearchProvider(): SearchProvider {
 
   return new PrimaryGazetteSearchProvider();
 }
+

@@ -75,3 +75,4 @@ vercel --prod
 - [ ] Side-by-side Legal Comparison Engine displays matrices and exports PDF & CSV.
 - [ ] AI Legal Research Assistant operates with primary source citations.
 - [ ] Admin Portal displays staging queue and system integrity checks.
+

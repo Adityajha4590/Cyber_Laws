@@ -86,3 +86,4 @@
 - **SQL Injection Prevention**: Prisma parameterization guarantees immunity against SQL injection.
 - **XSS & CSRF Prevention**: Next.js App Router server actions with CSRF tokenization and React JSX auto-escaping.
 - **Data Safeguards**: AI queries treat web retrieval data as untrusted text, preventing prompt injection.
+

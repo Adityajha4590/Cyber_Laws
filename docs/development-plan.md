@@ -94,3 +94,4 @@
 - [ ] Unit & integration tests for search, comparison logic, punishment parsing, citation formatting.
 - [ ] Build validation (`next build`).
 - [ ] Verification of all acceptance criteria.
+

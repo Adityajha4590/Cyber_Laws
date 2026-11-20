@@ -93,3 +93,4 @@ export function generateComparisonPDF(comparison: ComparisonResult) {
 
   doc.save(`CyberLaw_Atlas_${comparison.crime.slug}_Comparison.pdf`);
 }
+

@@ -193,3 +193,4 @@ export default async function LegislationDetailPage({
     </div>
   );
 }
+
