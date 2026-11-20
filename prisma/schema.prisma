@@ -1,0 +1,388 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum LegislativeStatus {
+  DRAFT
+  PROPOSED
+  PENDING
+  ENACTED
+  NOTIFIED
+  IN_FORCE
+  PARTIALLY_IN_FORCE
+  NOT_YET_COMMENCED
+  AMENDED
+  REPEALED
+  SUPERSEDED
+  UNKNOWN
+}
+
+enum LegalCoverage {
+  EXPLICITLY_REGULATED
+  INDIRECTLY_COVERED
+  GENERAL_LAW_APPLICABLE
+  PROPOSED_LEGISLATION
+  LEGAL_GAP_IDENTIFIED
+  UNCERTAIN
+  NOT_RESEARCHED
+}
+
+enum SourceReliability {
+  PRIMARY_OFFICIAL
+  GOVERNMENT
+  COURT
+  REGULATOR
+  INTERNATIONAL_ORGANIZATION
+  ACADEMIC
+  SECONDARY_LEGAL
+  NEWS
+  OTHER
+  UNVERIFIED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  AI_RESEARCHED
+  SOURCE_VERIFIED
+  HUMAN_REVIEWED
+  PUBLISHED
+  NEEDS_UPDATE
+}
+
+enum UserRole {
+  ADMIN
+  RESEARCHER
+  USER
+}
+
+model Country {
+  id              String        @id @default(uuid())
+  code            String        @unique // e.g. "IN", "US", "GB", "SG"
+  iso3            String        @unique // e.g. "IND", "USA", "GBR", "SGP"
+  name            String
+  flagEmoji       String?
+  region          String
+  legalSystem     String?       // e.g. "Common Law", "Civil Law"
+  officialPortals String?       // JSON or comma separated URLs
+  description     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  legislations    Legislation[]
+  researchQueries ResearchQuery[]
+
+  @@index([region])
+}
+
+model CybercrimeCategory {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  slug         String        @unique
+  description  String
+  displayOrder Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  crimes       Cybercrime[]
+}
+
+model Cybercrime {
+  id                        String             @id @default(uuid())
+  name                      String
+  slug                      String             @unique
+  categoryId                String
+  category                  CybercrimeCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  shortDescription          String
+  detailedExplanation       String
+  commonTerminology         String?
+  howItWorks                String
+  typicalImpact             String
+  preventionRecommendations String
+  isAiRelated               Boolean            @default(false)
+  aiSpecificDetails         String?            // Scenarios, AI model aspects, potential harm
+  verificationStatus        VerificationStatus @default(SOURCE_VERIFIED)
+  lastVerifiedDate          DateTime           @default(now())
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+
+  synonyms                  CybercrimeSynonym[]
+  relationsFrom             CybercrimeRelation[] @relation("SourceCrime")
+  relationsTo               CybercrimeRelation[] @relation("TargetCrime")
+  legislationMappings       CrimeLegislationMapping[]
+  sources                   CrimeSource[]
+  researchQueries           ResearchQuery[]
+
+  @@index([categoryId])
+  @@index([isAiRelated])
+  @@index([slug])
+}
+
+model CybercrimeSynonym {
+  id        String     @id @default(uuid())
+  crimeId   String
+  crime     Cybercrime @relation(fields: [crimeId], references: [id], onDelete: Cascade)
+  synonym   String
+
+  @@index([crimeId])
+  @@index([synonym])
+}
+
+model CybercrimeRelation {
+  id            String     @id @default(uuid())
+  sourceCrimeId String
+  targetCrimeId String
+  relationType  String     // e.g. "RELATED_TO", "PREREQUISITE_FOR", "SPECIALIZED_FORM_OF"
+
+  sourceCrime   Cybercrime @relation("SourceCrime", fields: [sourceCrimeId], references: [id], onDelete: Cascade)
+  targetCrime   Cybercrime @relation("TargetCrime", fields: [targetCrimeId], references: [id], onDelete: Cascade)
+
+  @@index([sourceCrimeId])
+  @@index([targetCrimeId])
+}
+
+model Legislation {
+  id                 String             @id @default(uuid())
+  title              String
+  commonName         String?
+  countryId          String
+  country            Country            @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  legislationType    String             // e.g. "Primary Act", "Penal Code", "Data Protection Law"
+  year               Int
+  citation           String?
+  officialUrl        String?
+  governmentSource   String?
+  enactmentDate      DateTime?
+  assentDate         DateTime?
+  notificationDate   DateTime?
+  commencementDate   DateTime?
+  effectiveDate      DateTime?
+  amendmentDate      DateTime?
+  repealDate         DateTime?
+  status             LegislativeStatus  @default(IN_FORCE)
+  jurisdiction       String             // National, Federal, State, Union
+  description        String
+  fullTextUrl        String?
+  verificationStatus VerificationStatus @default(SOURCE_VERIFIED)
+  lastVerifiedDate   DateTime           @default(now())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  provisions         LegalProvision[]
+  events             LegislationEvent[]
+  mappings           CrimeLegislationMapping[]
+
+  @@index([countryId])
+  @@index([status])
+  @@index([year])
+}
+
+model LegalProvision {
+  id                 String             @id @default(uuid())
+  legislationId      String
+  legislation        Legislation        @relation(fields: [legislationId], references: [id], onDelete: Cascade)
+  sectionNumber      String             // e.g. "Section 66", "Section 1030(a)(2)"
+  clause             String?            // e.g. "Subsection (1)(a)"
+  officialHeading    String
+  officialText       String?
+  plainExplanation   String
+  intentRequirement  String?            // Mens rea: e.g. "Dishonestly or fraudulently", "Knowing and unauthorized"
+  jurisdiction       String?
+  effectiveDate      DateTime?
+  status             LegislativeStatus  @default(IN_FORCE)
+  verificationStatus VerificationStatus @default(SOURCE_VERIFIED)
+  lastVerifiedDate   DateTime           @default(now())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  punishments        LegalPunishment[]
+  sources            ProvisionSource[]
+  mappings           CrimeLegislationMapping[]
+
+  @@index([legislationId])
+  @@index([sectionNumber])
+}
+
+model LegalPunishment {
+  id                   String         @id @default(uuid())
+  provisionId          String
+  provision            LegalProvision @relation(fields: [provisionId], references: [id], onDelete: Cascade)
+  imprisonmentMin      Float?         // in years (e.g. 0.5 for 6 months)
+  imprisonmentMax      Float?         // in years (e.g. 3, 10, 20)
+  imprisonmentUnit     String?        @default("years")
+  fineMin              Float?
+  fineMax              Float?
+  fineCurrency         String?        // e.g. "INR", "USD", "GBP", "SGD"
+  fineType             String?        // "Statutory Fixed", "Up to", "Multiplier of Damage", "Court Discretion"
+  additionalSanctions  String?        // e.g. "Confiscation of computer equipment, debarment"
+  isMandatory          Boolean        @default(false)
+  variesByCircumstance Boolean        @default(true)
+  descriptiveText      String         // Full plain text explanation of legal consequences
+
+  @@index([provisionId])
+}
+
+model CrimeLegislationMapping {
+  id             String         @id @default(uuid())
+  crimeId        String
+  crime          Cybercrime     @relation(fields: [crimeId], references: [id], onDelete: Cascade)
+  legislationId  String
+  legislation    Legislation    @relation(fields: [legislationId], references: [id], onDelete: Cascade)
+  provisionId    String?
+  provision      LegalProvision? @relation(fields: [provisionId], references: [id], onDelete: SetNull)
+  coverageStatus LegalCoverage  @default(EXPLICITLY_REGULATED)
+  notes          String?
+  createdAt      DateTime       @default(now())
+
+  @@index([crimeId])
+  @@index([legislationId])
+  @@index([provisionId])
+}
+
+model LegislationEvent {
+  id                 String      @id @default(uuid())
+  legislationId      String
+  legislation        Legislation @relation(fields: [legislationId], references: [id], onDelete: Cascade)
+  eventType          String      // "Bill Introduced", "Enacted", "Commenced", "Amended", "Repealed", "Court Ruling"
+  eventDate          DateTime
+  title              String
+  description        String
+  officialGazetteRef String?
+  sourceUrl          String?
+  createdAt          DateTime    @default(now())
+
+  @@index([legislationId])
+  @@index([eventDate])
+}
+
+model Source {
+  id                 String             @id @default(uuid())
+  title              String
+  organization       String             // e.g. "Ministry of Electronics and Information Technology (MeitY)", "U.S. Congress"
+  url                String
+  domain             String
+  sourceType         String             // "Official Gazette", "Statute Portal", "Court Judgment"
+  reliability        SourceReliability  @default(PRIMARY_OFFICIAL)
+  excerpt            String?
+  publicationDate    DateTime?
+  accessDate         DateTime           @default(now())
+  verificationStatus VerificationStatus @default(SOURCE_VERIFIED)
+  verifiedBy         String?
+
+  provisionSources   ProvisionSource[]
+  crimeSources       CrimeSource[]
+
+  @@index([url])
+  @@index([reliability])
+}
+
+model ProvisionSource {
+  id          String         @id @default(uuid())
+  provisionId String
+  provision   LegalProvision @relation(fields: [provisionId], references: [id], onDelete: Cascade)
+  sourceId    String
+  source      Source         @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([provisionId])
+  @@index([sourceId])
+}
+
+model CrimeSource {
+  id       String     @id @default(uuid())
+  crimeId  String
+  crime    Cybercrime @relation(fields: [crimeId], references: [id], onDelete: Cascade)
+  sourceId String
+  source   Source     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([crimeId])
+  @@index([sourceId])
+}
+
+model ResearchQuery {
+  id                String          @id @default(uuid())
+  query             String
+  intent            String?
+  crimeEntity       String?
+  crime             Cybercrime?     @relation(fields: [crimeId], references: [id], onDelete: SetNull)
+  crimeId           String?
+  countryEntity     String?
+  country           Country?        @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  countryId         String?
+  legislationEntity String?
+  userId            String?
+  user              User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt         DateTime        @default(now())
+
+  results           ResearchResult[]
+}
+
+model ResearchResult {
+  id                  String             @id @default(uuid())
+  queryId             String
+  query               ResearchQuery      @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  directAnswer        String
+  executiveSummary    String
+  comparativeAnalysis String?
+  legalGaps           String?
+  confidenceScore     Float              @default(1.0)
+  status              VerificationStatus @default(AI_RESEARCHED)
+  createdAt           DateTime           @default(now())
+
+  citations           ResearchCitation[]
+  reviews             ResearchReviewQueue[]
+}
+
+model ResearchCitation {
+  id              String            @id @default(uuid())
+  resultId        String
+  result          ResearchResult    @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  sourceTitle     String
+  organization    String
+  url             String
+  excerpt         String?
+  publicationDate DateTime?
+  reliability     SourceReliability @default(PRIMARY_OFFICIAL)
+}
+
+model ResearchReviewQueue {
+  id           String         @id @default(uuid())
+  resultId     String
+  result       ResearchResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  reviewedBy   String?
+  status       String         @default("PENDING") // PENDING, APPROVED, REJECTED, EDITED
+  reviewNotes  String?
+  reviewedAt   DateTime?
+  createdAt    DateTime       @default(now())
+}
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  name         String
+  role         UserRole        @default(USER)
+  passwordHash String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  queries      ResearchQuery[]
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String   // CREATE, UPDATE, DELETE, PUBLISH, VERIFY
+  entityType  String   // CYBERCRIME, LEGISLATION, PROVISION, SOURCE
+  entityId    String
+  performedBy String
+  user        User?    @relation(fields: [performedBy], references: [id], onDelete: SetNull)
+  details     String?  // JSON formatted details
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([performedBy])
+}
